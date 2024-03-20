@@ -12,27 +12,8 @@ function InputLocation() {
 
   const handleClick = async () => {
     console.log();
-    if (cityname !== "" && api_key) {
-      let url = `https://api.openweathermap.org/data/2.5/weather?q=${cityname}&appid=${api_key}&units=metric`;
-      const promise = () =>
-        new Promise((resolve, reject) =>
-          axios
-            .get(url)
-            .then((res) => {
-              resolve(res?.data);
-              navigate("/display-waether", { state: { data: res?.data } });
-            })
-            .catch((err) => reject(reject(err)))
-        );
-      toast.promise(promise, {
-        loading: `Searching for ${cityname}`,
-        success: (data) => {
-          return `Getting ${data?.name || cityname} weather data successfully`;
-        },
-        error: (data) => {
-          return data?.message || "Some Error occured";
-        },
-      });
+    if (cityname !== "") {
+      navigate(`/${cityname}`);
     } else {
       if (cityname === "") {
         toast.warning(`Enter city name`);
@@ -50,25 +31,12 @@ function InputLocation() {
         toast.error("Error getting location:", error);
       } else {
         let url = `https://api.openweathermap.org/data/2.5/weather?lat=${location.latitude}&lon=${location.longitude}&appid=${api_key}&units=metric`;
-        const promise = () =>
-          new Promise((resolve, reject) =>
-            axios
-              .get(url)
-              .then((res) => {
-                resolve(res?.data);
-                navigate("/display-waether", { state: { data: res?.data } });
-              })
-              .catch((err) => reject(reject(err)))
-          );
-        toast.promise(promise, {
-          loading: `Searching for Latitude:${location.latitude}, Longitude:${location.longitude}`,
-          success: (data) => {
-            return `Getting ${data?.name} weather data successfully`;
-          },
-          error: (data) => {
-            return data?.message || "Some Error occured";
-          },
-        });
+        axios
+          .get(url)
+          .then((res) => {
+            navigate(`/${res?.data?.name}`);
+          })
+          .catch((err) => console.log(err));
       }
     });
   };

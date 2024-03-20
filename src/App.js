@@ -10,7 +10,7 @@ function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<InputLocation />} />
-          <Route path="/display-waether" element={<DisplayWeather />} />
+          <Route path="/:cityname" element={<DisplayWeather />} />
         </Routes>
       </BrowserRouter>
     </>

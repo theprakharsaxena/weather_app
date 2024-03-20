@@ -1,69 +1,97 @@
-import { useLocation, useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { FaArrowLeft } from "react-icons/fa6";
 import { IoLocationOutline } from "react-icons/io5";
 import { useEffect, useState } from "react";
 import { WiHumidity } from "react-icons/wi";
 import { LiaTemperatureHighSolid } from "react-icons/lia";
-import lookup from "country-code-lookup";
+import axios from "axios";
+import { toast } from "sonner";
+
+const api_key = process.env?.REACT_APP_API_KEY;
 
 const DisplayWeather = () => {
-  const { state } = useLocation();
   const navigate = useNavigate();
-  const [weatherData, setWeatherData] = useState(state?.data || {});
+  const [weatherData, setWeatherData] = useState();
   const [weatherIcon, setWeatherIcon] = useState("/images/clear.png");
+  const { cityname } = useParams();
+
+  console.log(cityname);
 
   useEffect(() => {
-    if (state?.data) {
-      setWeatherData(state?.data);
-      const data = state?.data || {};
+    if (cityname) {
+      let url = `https://api.openweathermap.org/data/2.5/weather?q=${cityname}&appid=${api_key}&units=metric`;
+      const promise = () =>
+        new Promise((resolve, reject) =>
+          axios
+            .get(url)
+            .then((res) => {
+              resolve(res?.data);
+              setWeatherData(res?.data);
+            })
+            .catch((err) => reject(reject(err)))
+        );
+      toast.promise(promise, {
+        loading: `Searching for ${cityname}`,
+        success: (data) => {
+          return `Getting ${data?.name} weather data successfully`;
+        },
+        error: (data) => {
+          return data?.message || "Some Error occured";
+        },
+      });
+    }
+  }, [cityname]);
+
+  useEffect(() => {
+    if (weatherData) {
       if (
-        data?.weather?.[0]?.icon === "01d" ||
-        data?.weather?.[0]?.icon === "01n"
+        weatherData?.weather?.[0]?.icon === "01d" ||
+        weatherData?.weather?.[0]?.icon === "01n"
       ) {
         setWeatherIcon("/images/clear.png");
       } else if (
-        data?.weather?.[0]?.icon === "02d" ||
-        data?.weather?.[0]?.icon === "02n"
+        weatherData?.weather?.[0]?.icon === "02d" ||
+        weatherData?.weather?.[0]?.icon === "02n"
       ) {
         setWeatherIcon("/images/cloud.png");
       } else if (
-        data?.weather?.[0]?.icon === "03d" ||
-        data?.weather?.[0]?.icon === "03n"
+        weatherData?.weather?.[0]?.icon === "03d" ||
+        weatherData?.weather?.[0]?.icon === "03n"
       ) {
         setWeatherIcon("/images/drizzle.png");
       } else if (
-        data?.weather?.[0]?.icon === "04d" ||
-        data?.weather?.[0]?.icon === "04n"
+        weatherData?.weather?.[0]?.icon === "04d" ||
+        weatherData?.weather?.[0]?.icon === "04n"
       ) {
         setWeatherIcon("/images/drizzle.png");
       } else if (
-        data?.weather?.[0]?.icon === "09d" ||
-        data?.weather?.[0]?.icon === "09n"
+        weatherData?.weather?.[0]?.icon === "09d" ||
+        weatherData?.weather?.[0]?.icon === "09n"
       ) {
         setWeatherIcon("/images/rain.png");
       } else if (
-        data?.weather?.[0]?.icon === "10d" ||
-        data?.weather?.[0]?.icon === "10n"
+        weatherData?.weather?.[0]?.icon === "10d" ||
+        weatherData?.weather?.[0]?.icon === "10n"
       ) {
         setWeatherIcon("/images/rain.png");
       } else if (
-        data?.weather?.[0]?.icon === "11d" ||
-        data?.weather?.[0]?.icon === "11n"
+        weatherData?.weather?.[0]?.icon === "11d" ||
+        weatherData?.weather?.[0]?.icon === "11n"
       ) {
         setWeatherIcon("/images/thunderstorm.png");
       } else if (
-        data?.weather?.[0]?.icon === "13d" ||
-        data?.weather?.[0]?.icon === "13n"
+        weatherData?.weather?.[0]?.icon === "13d" ||
+        weatherData?.weather?.[0]?.icon === "13n"
       ) {
         setWeatherIcon("/images/snow.png");
       } else if (
-        data?.weather?.[0]?.icon === "50d" ||
-        data?.weather?.[0]?.icon === "50n"
+        weatherData?.weather?.[0]?.icon === "50d" ||
+        weatherData?.weather?.[0]?.icon === "50n"
       ) {
         setWeatherIcon("/images/mist.png");
       }
     }
-  }, [state?.data]);
+  }, [weatherData]);
 
   return (
     <div className="bg-sky-400 flex h-screen justify-center items-center">
@@ -92,11 +120,7 @@ const DisplayWeather = () => {
           </h3>
           <div className="flex space-x-1 items-center animate-fade-up">
             <IoLocationOutline />
-            <p>{`${weatherData?.name}, ${
-              lookup.byInternet("IN").country
-                ? lookup.byInternet(weatherData?.sys?.country).country
-                : weatherData?.sys?.country
-            }`}</p>
+            <p>{`${weatherData?.name}, ${weatherData?.sys?.country}`}</p>
           </div>
         </div>
         <div className="border-t border-gray-300 w-full grid grid-cols-2 h-14">
